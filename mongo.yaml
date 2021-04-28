@@ -1,0 +1,47 @@
+version: '3'
+services:
+  smserver:
+     build:
+       context: .
+       dockerfile: Dockerfile
+       image: smserver
+       contaoner_name: smserver
+       ports:
+         - 5000:5000
+       env_file: .env
+       environment:
+         - MONGO_USERNAME=$MONGODB_USERNAME
+         - MONGO_PASSWORD=$MONGO_PASSWORD
+         - MONGO_HOSTNAME=mongodb
+         - MONGO_PORT=$MONGO_PORT
+         - MONGO_DB=$MONGO_DB
+       vloumes:
+         - .:/home/app
+         - node_modules:/home/app/node_modules
+       networks:
+         - mongo-network
+       command: ./wait-for.sh mongo:27017 -- /home/app/node_modules/.bin/nodemon index.js
+
+  mongodb:
+       image: mongo
+       ports:
+         - 27017:27017
+       env_file: .env
+       environment:
+         - MONGO_DB_USERNAME=$MONGO_USERNAME
+         - MONGO_DB_PASSWORD=$MONGO_PASSWORD
+       volumes:
+         - dbdata:/data/db
+       networks:
+         - mongo-network
+
+  mongo-express:
+       image: mongo-express
+       ports:
+         - 8081:8081
+       env_file: .env
+       environment:
+         - MONGO_INITDB_USERNAME=$MONGO_USERNAME
+         - MONGO_INITDB_PASSWORD=$MONGO_PASSWORD
+       networks:
+         - mongo-network

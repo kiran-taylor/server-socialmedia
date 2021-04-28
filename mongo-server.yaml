@@ -1,0 +1,41 @@
+version: '3'
+services:
+  nodejs:
+    image: kiranbalamalynur/socialmedia
+    env_file: .env
+    environment:
+      - MONGO_USERNAME=$MONGO_USERNAME
+      - MONGO_PASSWORD=$MONGO_PASSWORD
+      - MONGO_HOSTNAME=db
+      - MONGO_PORT=$MONGO_PORT
+      - MONGO_DB=$MONGO_DB
+    ports:
+      - "80:5000"
+    volumes:
+      - .:/home/app
+      - node_modules:/home/app/node_modules
+    command: ./wait-for.sh db:27017 -- /home/app/node_modules/.bin/nodemon index.js
+
+  db:
+    image: mongo:4.1.8-xenial
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD
+    volumes:
+      - dbdata:/data/db
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 4000:8081
+    env_file: .env
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=$MONGO_USERNAME
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=$MONGO_PASSWORD
+      - ME_CONFIG_MONGODB_SERVER=db
+
+volumes:
+  dbdata:
+  node_modules:
+
